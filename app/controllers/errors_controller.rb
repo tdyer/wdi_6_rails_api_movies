@@ -1,59 +1,52 @@
+# This controller will handle all Exceptions thrown by Rails.
+# It will create a json error message in the HTTP Response.
+
 class ErrorsController < ApplicationController
 
-  # All of the default HTTP status codes returned from Rails.
-  # ActionDispatch::ExceptionWrapper.rescue_responses.values.uniq
-  #  => [:not_found,
-  # :method_not_allowed,
-  # :not_implemented,
-  # :not_acceptable,
-  # :unprocessable_entity,
-  # :bad_request,
-  # :conflict]
+  # Create actions for all the HTTP status codes returned from Rails.
+  ActionDispatch::ExceptionWrapper.rescue_responses.values.uniq.each do |error_action|
+    # :not_found, :method_not_allowed, :not_implemented, :not_acceptable,
+    # :unprocessable_entity, :bad_request, :conflict
+    define_method(error_action.to_s) do
+      generic_exeception(error_action)
+    end
+  end
 
-  # All of the default HTTP status codes returned from Rails.
-  # AND their symbols and messages.
-  # ActionDispatch::ExceptionWrapper.rescue_responses.values.uniq.map do |status_symbol|
-  #   code =  Rack::Utils.status_code(status_symbol)
-  #   msg = Rack::Utils::HTTP_STATUS_CODES[code]
-  #   [status_symbol, code, msg]
-  # end
+  private
 
-  # [[:not_found, 404, "Not Found"],
-  #  [:method_not_allowed, 405, "Method Not Allowed"],
-  #  [:not_implemented, 501, "Not Implemented"],
-  #  [:not_acceptable, 406, "Not Acceptable"],
-  #  [:unprocessable_entity, 422, "Unprocessable Entity"],
-  #  [:bad_request, 400, "Bad Request"],
-  #  [:conflict, 409, "Conflict"]]
+  def generic_exeception(error_symbol)
+    # 404 = Rack::Utils.status_code(:not_found)
+    http_status = Rack::Utils.status_code(error_symbol)
 
-  def not_found
-    exception = env["action_dispatch.exception"]
-
+    # Very loose approximation of JSON error draft standard
+    # http://tools.ietf.org/html/draft-nottingham-http-problem-01
+    # http://phlyrestfully.readthedocs.org/en/latest/problems.html
     error_info = {
-      :error => 'not_found',
-      :original_path => env["action_dispatch.original_path"],
-      :status => 404,
-      :exception => "#{exception.class.name} : #{exception.message}"
+      # TODO: Provide a URL that will provide detailed text for each error.
+      :describedBy => "http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html",
+      :httpStatus => http_status,
+      :title => Rack::Utils::HTTP_STATUS_CODES[http_status],
+      :railsErrorSymbol => error_symbol
     }
-    render :json => error_info.to_json, :status => :not_found
-  end
 
-  def method_not_allowed
-  end
+    # TODO: Add specific info for user to submit to support
+    error_info[:userMessage] = "Yell for help at help@example.com"
 
-  def not_implemented
-  end
+    # Exception that caused error was set in the ShowExceptions middleware
+    if exception = env["action_dispatch.exception"]
+      if exception.respond_to?(:detail_message)
+        error_info[:detail] = exception.detail_message
+      else
+        error_info[:detail] = "#{exception.class.name} : #{exception.message}"
+      end
+    end
 
-  def not_acceptable
-  end
+    # Also set in the ShowExceptions middleware
+    if original_path = env["action_dispatch.original_path"]
+      error_info[:originalPath] = original_path
+    end
 
-  def unprocessable_entity
-  end
-
-  def bad_request
-  end
-
-  def conflict
+    render :json => error_info.to_json, :status => http_status
   end
 
 end
