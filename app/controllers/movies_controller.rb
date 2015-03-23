@@ -1,12 +1,11 @@
 class MoviesController < ApplicationController
-
+  before_action :set_movie, only: [:show, :update]
   def index
     @movies = Movie.all
     render json: @movies
   end
 
   def show
-    @movie = Movie.find(params[:id])
     render json: @movie
   end
 
@@ -20,7 +19,6 @@ class MoviesController < ApplicationController
   end
 
   def update
-    @movie = Movie.find(params[:id])
     if @movie.update(movie_params)
       head :no_content
     else
@@ -35,4 +33,7 @@ class MoviesController < ApplicationController
     params.require(:movie).permit(:title, :rating, :description, :total_gross, :released_on, reviews_attributes: [:name, :stars, :comment])
   end
 
+  def set_movie
+    @movie = Movie.find(params[:id])
+  end
 end
