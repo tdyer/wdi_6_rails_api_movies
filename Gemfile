@@ -8,6 +8,7 @@ gem 'active_model_serializers',
     :branch => '0-8-stable'
 
 group :development, :test do
+  gem 'annotate'
   gem 'web-console', '~> 2.0'
   gem 'spring'
   gem 'capybara'
