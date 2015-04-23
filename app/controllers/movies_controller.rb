@@ -1,3 +1,4 @@
+#
 class MoviesController < ApplicationController
   before_action :set_movie, only: [:show, :update]
   def index
@@ -30,7 +31,9 @@ class MoviesController < ApplicationController
 
   # this method will also be used by subclasses
   def movie_params
-    params.require(:movie).permit(:title, :rating, :description, :total_gross, :released_on, reviews_attributes: [:name, :stars, :comment])
+    params.require(:movie)
+      .permit(:title, :rating, :description, :total_gross, :released_on,
+              reviews_attributes: [:name, :stars, :comment])
   end
 
   def set_movie
