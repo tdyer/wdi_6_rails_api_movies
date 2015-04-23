@@ -7,24 +7,16 @@ Rails.application.routes.draw do
     resources :movies
   end
 
-  # Rails Error Handlers. Will return JSON errors.
-  match "/404", :to => "errors#not_found", via: [:get]
-  match "/405", :to => "errors#method_not_allowed", via: [:get]
-  match "/501", :to => "errors#not_implemented", via: [:get]
-  match "/406", :to => "errors#not_acceptable", via: [:get]
-  match "/422", :to => "errors#unprocessable_entity", via: [:get]
-  match "/400", :to => "errors#bad_request", via: [:get]
-  match "/409", :to => "errors#conflict", via: [:get]
-
-  # TODO: Generate the above error handler routes from:
-  #   ActionDispatch::ExceptionWrapper.rescue_responses.values.uniq.map do |status_symbol|
-  #     code =  Rack::Utils.status_code(status_symbol)
-  #     msg = Rack::Utils::HTTP_STATUS_CODES[code]
-  #     [status_symbol, code, msg]
-  #  end
-  # [[:not_found, 404, "Not Found"],
-  # ...
-  #  [:conflict, 409, "Conflict"]]
-
-
+  # Generate routes for each HTTP Error
+  # GET    /404(.:format)                   errors#not_found
+  # GET    /405(.:format)                   errors#method_not_allowed
+  # GET    /501(.:format)                   errors#not_implemented
+  # GET    /406(.:format)                   errors#not_acceptable
+  # GET    /422(.:format)                   errors#unprocessable_entity
+  # GET    /400(.:format)                   errors#bad_request
+  # GET    /409(.:format)                   errors#conflict
+  ActionDispatch::ExceptionWrapper.rescue_responses.values.uniq.map do |status_symbol|
+    code =  Rack::Utils.status_code(status_symbol)
+    match "/#{code}", :to => "errors#" << "#{status_symbol.to_s}", via: [:get]
+  end
 end

@@ -2,9 +2,6 @@ require 'rails_helper'
 
 describe 'Errors' do
   before do
-    # Not needed when going right to the Error URL.
-    #  Wdi6RailsApiMovies::Application.config.action_dispatch.show_exceptions
-    # = true
   end
 
   it "GET /404" do

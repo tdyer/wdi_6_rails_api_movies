@@ -1,7 +1,7 @@
 # This controller will handle all Exceptions thrown by Rails.
 # It will create a json error message in the HTTP Response.
 class ErrorsController < ApplicationController
-  # Create actions/methods for all the HTTP status codes returned from Rails.
+  # Create actions for all the error HTTP status codes returned from Rails.
   # Each action MUST have a route define in routes.rb, e.g.
   # match "/404", :to => "errors#not_found", via: [:get]
   ActionDispatch::ExceptionWrapper.rescue_responses
@@ -25,7 +25,9 @@ class ErrorsController < ApplicationController
     exception = env["action_dispatch.exception"]
     error_detail(error_info, exception) if exception
 
-    # Also set in the ShowExceptions middleware
+    # The URL path that caused the error.
+    # It's set in the ShowExceptions middlewarelso set in the ShowExceptions
+    # middleware
     original_path = env["action_dispatch.original_path"]
     original_path && error_info[:originalPath] = original_path
 
