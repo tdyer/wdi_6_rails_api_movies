@@ -50,7 +50,7 @@ describe Movie, type: :model do
     ben_hur_movie.update(
       description: "50's movie",
       reviews_attributes: [
-        { id: last_review.id, stars: 1, comment: "sucks, really" }
+        { id: last_review.id, name: 'joe', stars: 1, comment: "sucks, really" }
       ]
     )
     movie = Movie.find(ben_hur_movie.id)
@@ -58,7 +58,22 @@ describe Movie, type: :model do
     expect(movie.description).to eq "50's movie"
 
     updated_review = movie.reviews.find(last_review.id)
+    expect(updated_review.name).to eq 'joe'
     expect(updated_review.stars).to eq 1
     expect(updated_review.comment).to match(/sucks/)
+  end
+
+  it "add a new review" do
+    ben_hur_movie.update(
+      reviews_attributes: [
+        { name: 'tom', stars: 3, comment: "to egyptian" }
+      ]
+    )
+    movie = Movie.find(ben_hur_movie.id)
+
+    updated_review = movie.reviews.last
+    expect(updated_review.name).to eq 'tom'
+    expect(updated_review.stars).to eq 3
+    expect(updated_review.comment).to match(/egyptian/)
   end
 end
